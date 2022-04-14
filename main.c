@@ -12,10 +12,10 @@ void bubble(int array[MAX], int num);
 void selection(int array[MAX], int num);
 void insertion(int array[MAX], int num);
 void swap (int * a, int * b);
-int partition (int array[MAX], int low, int high);
-void quick(int array[MAX], int low, int high);
-void mergeSort(int array[MAX], int left, int right);
-void merge(int array[MAX], int left, int middle, int right);
+int partition (int array[MAX], int low, int high, int * count);
+void quick(int array[MAX], int low, int high, int * count);
+void mergeSort(int array[MAX], int left, int right, int * count);
+void merge(int array[MAX], int left, int middle, int right, int * count);
 
 int main(void)
 {
@@ -75,13 +75,17 @@ int makeList(int array[MAX])
 
 int linear(int array[MAX], int num, int key)
 {
+    int count = 0;
     for (int i = 0; i < num; i++)
     {
+        count++;
         if (array[i] == key)
         {
+            printf("Comparisons: %d\n", count);
             return i;
         }
     }
+    printf("Comparisons: %d\n", count);
     return -1;
 }
 
@@ -90,33 +94,43 @@ int binary(int array[MAX], int num, int key)
     int left = 0;
     int right = num-1;
     int middle;
+    int count = 0;
 
     while (left <= right)
     {
         middle = (left+right)/2;
+
         if (key == array[middle])
         {
+            count++;
+            printf("Comparisons: %d\n", count);
             return middle;
         }
         else if (key > array[middle])
         {
+            count += 2;
             left = middle+1;
         }
-        else{
+        else
+        {
+            count += 3;
             right = middle-1;
         }
     }
+    printf("Comparisons: %d\n", count);
     return -1;
 }
 
 void bubble(int array[MAX], int num)
 {
     int temp;
+    int count = 0;
 
     for (int i = 0; i < num - 1; i++)
     {
         for (int j = 0; j < num-i-1; j++)
         {
+            count++;
             if (array[j] > array[j+1])
             {
                 temp = array[j];
@@ -125,12 +139,14 @@ void bubble(int array[MAX], int num)
             }
         }
     }
+    printf("Comparisons: %d\n", count);
 }
 
 void selection(int array[MAX], int num)
 {
     int minVal, minPos;
     int temp;
+    int count = 0;
 
     for (int i = 0; i < num; i++)
     {
@@ -138,6 +154,7 @@ void selection(int array[MAX], int num)
         minPos = i;
         for (int j = i+1; j < num; j++)
         {
+            count++;
             if (array[j] < minVal)
             {
                 minPos = j;
@@ -148,6 +165,7 @@ void selection(int array[MAX], int num)
         array[i] = array[minPos];
         array[minPos] = temp;
     }
+    printf("Comparisons: %d\n", count);
 }
 
 void insertion(int array[MAX], int num)
@@ -173,7 +191,7 @@ void swap (int * a, int * b) {
     *b = temp;
 }
 
-int partition (int array[MAX], int low, int high) {
+int partition (int array[MAX], int low, int high, int * count) {
     
     int pivot, pIndex, i;
     pivot = array[high];
@@ -181,6 +199,7 @@ int partition (int array[MAX], int low, int high) {
     pIndex = low;
     
     for (i = low; i < high; i++) {
+        (*count)++;
         if (array[i] <= pivot) {
             swap (&array[i], &array[pIndex]);
             pIndex++;
@@ -190,17 +209,17 @@ int partition (int array[MAX], int low, int high) {
     return pIndex;
 }
 
-void quick(int array[MAX], int low, int high) {
-
+void quick(int array[MAX], int low, int high, int * count) {
+    count++;
     if (low < high)
     {
-        int pivotIndex = partition (array, low, high);
-        quick(array, low, pivotIndex-1);
-        quick(array, pivotIndex+1, high);
+        int pivotIndex = partition (array, low, high, count);
+        quick(array, low, pivotIndex-1, count);
+        quick(array, pivotIndex+1, high, count);
     }
 }
 
-void merge(int arr[], int left, int middle, int right)
+void merge(int array[MAX], int left, int middle, int right, int * count)
 {
     int i, j, k;
     int n1 = middle - left + 1;
@@ -208,11 +227,11 @@ void merge(int arr[], int left, int middle, int right)
     int leftTemp[n1], rightTemp[n2];
     
     for (i = 0; i < n1; i++) {
-        leftTemp[i] = arr[left + i];
+        leftTemp[i] = array[left + i];
     }
     
     for (j = 0; j < n2; j++) {
-        rightTemp[j] = arr[middle + 1 + j];
+        rightTemp[j] = array[middle + 1 + j];
     }
     
     i = 0;
@@ -221,37 +240,39 @@ void merge(int arr[], int left, int middle, int right)
     
     while (i < n1 && j < n2) {
         if (leftTemp[i] <= rightTemp[j]) {
-            arr[k] = leftTemp[i];
+            (*count)++;
+            array[k] = leftTemp[i];
             i++;
         }
         else {
-            arr[k] = rightTemp[j];
+            (*count)+=2;
+            array[k] = rightTemp[j];
             j++;
         }
         k++;
     }
     
     while (i < n1) {
-        arr[k] = leftTemp[i];
+        array[k] = leftTemp[i];
         i++;
         k++;
     }
     
     while (j < n2) {
-        arr[k] = rightTemp[j];
+        array[k] = rightTemp[j];
         j++;
         k++;
     }
 }
 
-void mergeSort(int array[MAX], int left, int right)
+void mergeSort(int array[MAX], int left, int right, int * count)
 {   
+    (*count)++;
     if (left < right) {
         int middle = left+(right-left)/2;
-        mergeSort(array, left, middle);
-        mergeSort(array, middle+1, right);
-        
-        merge(array, left, middle, right);
+        mergeSort(array, left, middle, count);
+        mergeSort(array, middle+1, right, count);
+        merge(array, left, middle, right, count);
     }
 }
 
@@ -288,6 +309,7 @@ void searching(int array[MAX], int num)
 void sorting(int array[MAX], int num)
 {
     int input;
+    int count;
     do
     {
         printf("1. Bubble sort\n2. Selection sort\n3. Insertion sort\n4. Quicksort\n5. Mergesort\n6. Back\nChoice: ");
@@ -304,10 +326,14 @@ void sorting(int array[MAX], int num)
                 insertion(array, num);
                 break;
             case 4:
-                quick(array, 0, num-1);
+                count = 0;
+                quick(array, 0, num-1, &count);
+                printf("Comparisons: %d\n", count);
                 break;
             case 5:
-                mergeSort(array, 0, num-1);
+                count = 0;
+                mergeSort(array, 0, num-1, &count);
+                printf("Comparisons: %d\n", count);
                 break;
             case 6:
                 break;
